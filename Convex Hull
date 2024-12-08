@@ -1,31 +1,46 @@
-def rotate(o, a, b):
+import random
+import matplotlib.pyplot as plt
+
+def cross(o, a, b):
     return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
 
 def jarvis_march(A):
-    n = len(A)
-    P = list(range(n))
-
-    for i in range(1, n):
-        if A[P[i]][0] < A[P[0]][0]:
-            P[i], P[0] = P[0], P[i]
-
-    H = [P[0]]
-    del P[0]
-    P.append(H[0])
-
+    hull = []
+    point = min(A, key=lambda x: x[0])
+    
     while True:
-        right = 0
-        for i in range(1, len(P)):
-            if rotate(A[H[-1]], A[P[right]], A[P[i]]) < 0:
-                right = i
-        if P[right] == H[0]:
+        hull.append(point)
+        next_point = A[0]
+
+        for p in A:
+            if p == point:
+                continue
+            if cross(point, next_point, p) > 0:
+                next_point = p
+
+        point = next_point
+
+        if point == hull[0]:
             break
-        else:
-            H.append(P[right])
-            del P[right]
 
-    return [A[i] for i in H]
+    return hull
 
-A = [(0, 0), (1, 2), (2, 2), (2, 0), (3, 1), (3, 3), (1, 1)]
+num_points = 100
+A = [(random.randint(0, 50), random.randint(0, 50)) for _ in range(num_points)]
+
 hull = jarvis_march(A)
-print("Convex Hull:", hull)
+
+x_points, y_points = zip(*A)
+x_hull, y_hull = zip(*hull)
+
+plt.scatter(x_points, y_points, color='blue', label='Points')
+plt.plot(x_hull + (x_hull[0],), y_hull + (y_hull[0],), color='red', label='Convex Hull')
+plt.fill(x_hull + (x_hull[0],), y_hull + (y_hull[0],), color='lightblue', alpha=0.5)
+
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.title('Convex Hull using Jarvis March (Random Points)')
+plt.legend()
+plt.grid(True)
+plt.show()
+
